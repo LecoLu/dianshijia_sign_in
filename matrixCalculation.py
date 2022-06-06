@@ -14,8 +14,11 @@ def multiply(A,B):
     return A@B
 
 # calculate the norm
-def norm(A):
-    return 0
+def Euclidean_norm(x):
+    sum = 0
+    for i in range(len(x.T)):
+        sum += i**2
+    return np.sqrt(sum)
 
 # calculate the basis of the vector
 def basis(A):
@@ -118,9 +121,8 @@ def null_space(A):
     am,an=A.shape
     B=np.zeros(am)
     X=mySolve(A,B)
-            
     return np.linalg.matrix_rank(X)
 
-# solve matrix and output two answers
+# output two answers
 def solve_matrix(A_b):
     return (0,0)
