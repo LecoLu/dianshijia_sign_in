@@ -1,11 +1,11 @@
 import numpy as np
 import sympy as sp
 
-# add two matrix
+# add two matrices
 def add(A,B):
     return A+B
 
-# subtract two matrix
+# subtract two matrices
 def sub(A,B):
     return A-B
 
@@ -42,7 +42,8 @@ def basis(A):
             T.append(A[:,i])
     return np.array(T).T
 
-# from: https://blog.csdn.net/u012958850/article/details/125284113   
+
+# from: https://blog.csdn.net/u012958850/article/details/125284113     
 def P1(A, i, j, row=True):            
     if row:
         A[[i,j]]=A[[j,i]]              
@@ -116,13 +117,85 @@ def mySolve(A,b):
         X=X[order]
     return X
 
-# dimension of null space
+# find null space
 def null_space(A):
-    am,an=A.shape
+    am,_=A.shape
     B=np.zeros(am)
     X=mySolve(A,B)
     return np.linalg.matrix_rank(X)
 
 # output two answers
 def solve_matrix(A_b):
-    return (0,0)
+    A=np.delete(A_b,-1,1)
+    a_m,a_n=A.shape
+    a_gaussian_result,_ = sp.Matrix(A).rref()
+    a_gaussian_result = np.array(a_gaussian_result)
+    
+    m,n=A_b.shape
+    gaussian_result,_ = sp.Matrix(A_b).rref()
+    gaussian_result = np.array(gaussian_result)
+
+    freex_id=[]
+    for i in range(n-1):
+            freex_id.append(i)
+    count_basic=0
+    
+    for i in range(m):
+        for j in range(n-1):
+            if(gaussian_result[i][j]!=0):
+                #pivot,xj is basic variable
+                count_basic+=1
+                freex_id.remove(j)
+                break
+    
+    _,rank_a=basis(gaussian_result).shape
+    _,rank_a_aug=basis(a_gaussian_result).shape
+
+    if(rank_a!=rank_a_aug):
+        return None
+    elif(rank_a==a_n):
+        solution1=np.zeros(a_n)
+        for i in range(a_n):
+            solution1[i]=gaussian_result[i][-1]
+        return solution1
+    elif(rank_a<a_n):
+        solution1=np.zeros(a_n)
+        solution2=np.zeros(a_n)
+
+        if(len(freex_id)==1):
+            solution1[freex_id[0]]=1
+            solution2[freex_id[0]]=2
+            for i in range(m-1,-1,-1):
+                for j in range(n-1):
+                    if(gaussian_result[i][j]==1):
+                        sum=0
+                        for k in range(j+1,n-1):
+                            sum+=gaussian_result[i][k]
+                        solution1[j]=-solution1[freex_id[0]]*sum+gaussian_result[i][-1]
+                        solution2[j]=-solution2[freex_id[0]]*sum+gaussian_result[i][-1]
+                        break
+            result=(solution1,solution2)
+            return result
+        else:
+            solution1[freex_id[-1]]=1
+            for i in range(m-1,-1,-1):
+                for j in range(n-1):
+                    if(gaussian_result[i][j]==1):
+                        sum=0
+                        for k in range(j+1,n-1):
+                            sum+=gaussian_result[i][k]*solution1[k]
+                        solution1[j]=-solution1[freex_id[-1]]*sum+gaussian_result[i][-1]
+                        break
+
+            solution2[freex_id[-2]]=1
+            for i in range(m-1,-1,-1):
+                for j in range(n-1):
+                    if(gaussian_result[i][j]==1):
+                        sum=0
+                        for k in range(j+1,n-1):
+                            sum+=gaussian_result[i][k]*solution2[k]
+                        solution2[j]=-solution1[freex_id[-1]]*sum+gaussian_result[i][-1]
+                        break
+            result=(solution1,solution2)
+            return result
+        
